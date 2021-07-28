@@ -1,0 +1,35 @@
+{
+  "version": 2,
+  "timeout": "3000ms",
+  "name": "redpanda",
+  "endpoints": [
+    {
+      "endpoint": "/redpanda",
+      "method": "POST",
+      "output_encoding": "json",
+      "extra_config": {
+        "github.com/devopsfaith/krakend/proxy": {
+            "static": {
+                "strategy": "success",
+                "data": {
+                    "status": 200,
+                    "message": "OK"
+                }
+            }
+        }
+      },
+      "backend": [
+        {
+          "extra_config": {
+            "github.com/devopsfaith/krakend-pubsub/publisher": {
+              "topic_url": "chat-rooms"
+            }
+          },
+          "host": ["kafka://"],
+          "disable_host_sanitize": true
+        }
+      ]
+    }
+  ],
+  "port": 8080
+}
