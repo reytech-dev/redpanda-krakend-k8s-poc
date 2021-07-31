@@ -9,13 +9,13 @@
       "output_encoding": "json",
       "extra_config": {
         "github.com/devopsfaith/krakend/proxy": {
-            "static": {
-                "strategy": "success",
-                "data": {
-                    "status": 200,
-                    "message": "OK"
-                }
+          "static": {
+            "strategy": "success",
+            "data": {
+              "status": 200,
+              "message": "OK"
             }
+          }
         }
       },
       "backend": [
@@ -26,6 +26,27 @@
             }
           },
           "host": ["kafka://"],
+          "disable_host_sanitize": true
+        }
+      ]
+    },
+    {
+      "endpoint": "/login",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "headers_to_pass": [
+        "Content-Type"
+      ],
+      "extra_config": {
+        "github.com/devopsfaith/krakend-lua/proxy": {
+          "pre": "local r = request.load(); r:body(r:body() .. '&audience=YOUR-AUDIENCE&grant_type=password&client_id=YOUR-CLIENT-ID&client_secret=YOUR-CLIENT-SECRET'); print(r:body());"
+        }
+      },
+      "backend": [
+        {
+          "encoding": "no-op",
+          "url_pattern": "/",
+          "host": ["YOUR-TOKEN-ENDPOINT"],
           "disable_host_sanitize": true
         }
       ]

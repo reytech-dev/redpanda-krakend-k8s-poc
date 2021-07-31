@@ -1,4 +1,4 @@
-# Use Redpanda with Krakend and metallb in a local k8s clsuter
+# Use Redpanda with Krakend and metallb in a local k8s cluster
 
 This repository holds instructions about how to setup a local Kubernetes cluster with Kind and run Redpanda and Krakend.
 Keep in mind, that this setup is not meant to be used in a production environment! The content of this repository is only tested with Linux Ubuntu 20.04.
@@ -48,6 +48,7 @@ The new Krakend binary is available in the project root of the Krakend-CE reposi
 
 1. [Redpanda](https://vectorized.io/docs/)
 2. [Krakend](https://www.krakend.io)
+3. [Auth0](https://auth0.com/)
 
 ## Requirements
 
@@ -238,6 +239,70 @@ spec:
 6. Apply "krakend-deployment.yaml" to Kubernetes cluster
 ```bash
 $ kubectl apply -f krakend-deployment.yaml
+```
+
+## Add Auth0 integration
+
+1. Create new application in Auth0 ("Regular Webapp")
+2. Follow the instructions [here](https://auth0.com/docs/flows/call-your-api-using-resource-owner-password-flow)
+3. Replace the above krakend.json config. Replace YOUR-AUDIENCE, YOUR-CLIENT-ID, YOUR-CLIENT-SECRET with the data from your Auth0 application
+```json
+{
+  "version": 2,
+  "timeout": "3000ms",
+  "name": "redpanda",
+  "endpoints": [
+    {
+      "endpoint": "/redpanda",
+      "method": "POST",
+      "output_encoding": "json",
+      "extra_config": {
+        "github.com/devopsfaith/krakend/proxy": {
+          "static": {
+            "strategy": "success",
+            "data": {
+              "status": 200,
+              "message": "OK"
+            }
+          }
+        }
+      },
+      "backend": [
+        {
+          "extra_config": {
+            "github.com/devopsfaith/krakend-pubsub/publisher": {
+              "topic_url": "chat-rooms"
+            }
+          },
+          "host": ["kafka://"],
+          "disable_host_sanitize": true
+        }
+      ]
+    },
+    {
+      "endpoint": "/login",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "headers_to_pass": [
+        "Content-Type"
+      ],
+      "extra_config": {
+        "github.com/devopsfaith/krakend-lua/proxy": {
+          "pre": "local r = request.load(); r:body(r:body() .. '&audience=YOUR-AUDIENCE&grant_type=password&client_id=YOUR-CLIENT-ID&client_secret=YOUR-CLIENT-SECRET'); print(r:body());"
+        }
+      },
+      "backend": [
+        {
+          "encoding": "no-op",
+          "url_pattern": "/",
+          "host": ["YOUR-TOKEN-ENDPOINT"],
+          "disable_host_sanitize": true
+        }
+      ]
+    }
+  ],
+  "port": 8080
+}
 ```
 
 
