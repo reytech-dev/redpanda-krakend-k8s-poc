@@ -245,7 +245,7 @@ $ kubectl apply -f krakend-deployment.yaml
 
 1. Create new application in Auth0 ("Regular Webapp")
 2. Follow the instructions [here](https://auth0.com/docs/flows/call-your-api-using-resource-owner-password-flow)
-3. Replace the above krakend.json config. Replace YOUR-AUDIENCE, YOUR-CLIENT-ID, YOUR-CLIENT-SECRET with the data from your Auth0 application
+3. Replace the above krakend.json config. Replace YOUR-AUDIENCE, YOUR-CLIENT-ID, YOUR-CLIENT-SECRET, YOUR-TOKEN-ENDPOINT with the data from your Auth0 application
 ```json
 {
   "version": 2,
